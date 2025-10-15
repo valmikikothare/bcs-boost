@@ -54,10 +54,6 @@ if ! need_cmd composer; then
   rm composer-setup.php
 fi
 
-### === Nodejs and npm ===
-log "Installing nodejs and npm"
-sudo apt-get install -y nodejs npm
-
 ### === Project directory ===
 log "Preparing project directory at ${PROJECT_DIR}"
 sudo mkdir -p "${PROJECT_DIR}"
@@ -82,17 +78,9 @@ fi
 ### === Laravel dependencies ===
 log "Installing Laravel dependencies with Composer"
 if [ -f composer.json ]; then
-  composer install --no-interaction --prefer-dist --optimize-autoloader
+  composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 else
   log "composer.json not found. Ensure your Laravel code is in ${PROJECT_DIR}"
-fi
-
-### === Build frontend ===
-log "Installing javascript dependencies and building frontend"
-if [ -f package.json ]; then
-  npm install && npm run build
-else
-  log "package.json not found. Ensure your Laravel code is in ${PROJECT_DIR}"
 fi
 
 ### === Optimize Laravel cache ===
@@ -103,18 +91,18 @@ if [ -f "${PROJECT_DIR}/artisan" ]; then
   php "${PROJECT_DIR}/artisan" view:cache || true
 fi
 
+### === Laravel permissions ===
+log "Setting Laravel storage and cache permissions"
+sudo chown -R "$USER":www-data "${PROJECT_DIR}/storage" "${PROJECT_DIR}/bootstrap/cache" || true
+sudo find "${PROJECT_DIR}/storage" -type d -exec chmod 775 {} \; || true
+sudo find "${PROJECT_DIR}/bootstrap/cache" -type d -exec chmod 775 {} \; || true
+
 ### === Apache ===
 log "Installing and enabling Apache"
 sudo apt-get install -y apache2
 sudo systemctl enable apache2
 sudo systemctl start apache2
 sudo a2enmod rewrite headers ssl
-
-### === Laravel permissions ===
-log "Setting Laravel storage and cache permissions"
-sudo chown -R www-data:www-data "${PROJECT_DIR}/storage" "${PROJECT_DIR}/bootstrap/cache" || true
-sudo find "${PROJECT_DIR}/storage" -type d -exec chmod 775 {} \; || true
-sudo find "${PROJECT_DIR}/bootstrap/cache" -type d -exec chmod 775 {} \; || true
 
 ### === Apache vhost for Laravel (DocumentRoot -> public) ===
 log "Creating Apache vhost for ${DOMAIN}"
