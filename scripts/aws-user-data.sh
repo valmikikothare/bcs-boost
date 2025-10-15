@@ -7,7 +7,7 @@ DOMAIN="bcs-boost.mit.edu"
 PROJECT_DIR="/var/www/html" # Laravel project path
 GIT_REPO_URL="https://github.com/valmikikothare/bcs-boost.git" # Optional: set if you want to auto-clone
 APACHE_CONF="/etc/apache2/sites-available/${DOMAIN}.conf"
-USER="ubuntu"
+USER_NAME="ubuntu"
 PHP_VERSION="8.2"
 
 ### === Helpers ===
@@ -22,7 +22,6 @@ apt-get upgrade -y
 ### === Basic tools ===
 log "Installing basic utilities"
 apt-get install -y software-properties-common curl zip unzip git ufw
-
 
 ### === PHP 8.2 & extensions ===
 log "Installing PHP ${PHP_VERSION} and common extensions for Laravel"
@@ -60,35 +59,41 @@ fi
 log "Installing nodejs and npm"
 apt-get install -y nodejs npm
 
-### === Project directory ===
 log "Preparing project directory at ${PROJECT_DIR}"
-rm -rf "${PROJECT_DIR}"
-mkdir -p "${PROJECT_DIR}"
-chown -R "${USER}":"${USER}" "${PROJECT_DIR}"
+if [ ! -f "${PROJECT_DIR}/composer.json" ] || [ ! -f "${PROJECT_DIR}/package.json" ] || [ ! -f "${PROJECT_DIR}/artisan" ]; then
+    rm -rf "${PROJECT_DIR}"
+    mkdir -p "${PROJECT_DIR}"
+fi
+
+### === Project directory ===
 git clone "${GIT_REPO_URL}" "${PROJECT_DIR}"
 cd "${PROJECT_DIR}"
 
 ### === Copy .env.example ===
 log "Copying .env.example to .env"
-cp .env.example .env
-
-### === Laravel dependencies ===
-log "Installing Laravel dependencies with Composer"
-composer install --no-interaction --prefer-dist --optimize-autoloader
+if [ ! -f .env ]; then
+    cp .env.example .env
+fi
 
 ### === Build frontend ===
 log "Installing javascript dependencies and building frontend"
 npm install && npm run build
 rm -rf node_modules
 
+chown -R "${USER_NAME}":"${USER_NAME}" "${PROJECT_DIR}"
+
+### === Laravel dependencies ===
+log "Installing Laravel dependencies with Composer"
+sudo -u "${USER_NAME}" composer install --no-interaction --prefer-dist --optimize-autoloader
+
 ### === Optimize Laravel cache ===
 log "Optimizing laravel caches"
-php artisan optimize:clear
-php artisan optimize
+sudo -u "${USER_NAME}" php artisan optimize:clear
+sudo -u "${USER_NAME}" php artisan optimize
 
 ### === Laravel permissions ===
 log "Setting Laravel storage and cache permissions"
-chown -R "${USER}":www-data storage bootstrap/cache
+chown -R "${USER_NAME}":www-data storage bootstrap/cache
 find storage -type d -exec chmod 775 {} \;
 find bootstrap/cache -type d -exec chmod 775 {} \;
 
@@ -147,7 +152,6 @@ else
 fi
 ln -sf /snap/bin/certbot /usr/bin/certbot
 certbot --apache -d "${DOMAIN}" --redirect --agree-tos -m "admin@${DOMAIN}" -n || true
-
 
 ### === Final restart ===
 log "Restarting Apache"
