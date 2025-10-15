@@ -45,7 +45,7 @@ if ! need_cmd composer; then
   EXPECTED_CHECKSUM="$(curl -fsSL https://composer.github.io/installer.sig)"
   php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
   ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
-  if [ "$EXPECTED_CHECKSUM" != "$ACTUAL_CHECKSUM" ]; then
+  if [ "${EXPECTED_CHECKSUM}" != "${ACTUAL_CHECKSUM}" ]; then
     echo 'ERROR: Invalid Composer installer checksum' >&2
     rm composer-setup.php
     exit 1
@@ -60,54 +60,35 @@ sudo apt-get install -y nodejs npm
 
 ### === Project directory ===
 log "Preparing project directory at ${PROJECT_DIR}"
+sudo rm -rf "${PROJECT_DIR}"
 sudo mkdir -p "${PROJECT_DIR}"
-sudo chown -R "$USER":"$USER" "${PROJECT_DIR}"
-
-if [ -n "${GIT_REPO_URL}" ] && [ -z "$(ls -A "${PROJECT_DIR}")" ]; then
-  log "Cloning repo ${GIT_REPO_URL} into ${PROJECT_DIR}"
-  git clone "${GIT_REPO_URL}" "${PROJECT_DIR}"
-else
-  log "Skipping clone (either repo URL not set or directory not empty)."
-fi
+sudo chown -R "${USER}":"${USER}" "${PROJECT_DIR}"
+git clone "${GIT_REPO_URL}" "${PROJECT_DIR}"
 cd "${PROJECT_DIR}"
 
-### === Laravel dependencies ===
-log "Installing Laravel dependencies with Composer"
-if [ ! -f .env ] && [ -f .env.example ]; then
-  cp .env.example .env
-else
-  log ".env.example not found. Ensure your Laravel code is in ${PROJECT_DIR}"
-fi
+### === Copy .env.example ===
+log "Copying .env.example to .env"
+cp .env.example .env
 
 ### === Laravel dependencies ===
 log "Installing Laravel dependencies with Composer"
-if [ -f composer.json ]; then
-  composer install --no-interaction --prefer-dist --optimize-autoloader
-else
-  log "composer.json not found. Ensure your Laravel code is in ${PROJECT_DIR}"
-fi
+composer install --no-interaction --prefer-dist --optimize-autoloader
 
 ### === Build frontend ===
 log "Installing javascript dependencies and building frontend"
-if [ -f package.json ]; then
-  npm install && npm run build
-  rm -rf node_modules
-else
-  log "package.json not found. Ensure your Laravel code is in ${PROJECT_DIR}"
-fi
+npm install && npm run build
+rm -rf node_modules
 
 ### === Optimize Laravel cache ===
-if [ -f "${PROJECT_DIR}/artisan" ]; then
-  log "Optimizing laravel caches"
-  php "${PROJECT_DIR}/artisan" optimize:clear
-  php "${PROJECT_DIR}/artisan" optimize
-fi
+log "Optimizing laravel caches"
+php artisan optimize:clear
+php artisan optimize
 
 ### === Laravel permissions ===
 log "Setting Laravel storage and cache permissions"
-sudo chown -R "$USER":www-data "${PROJECT_DIR}/storage" "${PROJECT_DIR}/bootstrap/cache" || true
-sudo find "${PROJECT_DIR}/storage" -type d -exec chmod 775 {} \; || true
-sudo find "${PROJECT_DIR}/bootstrap/cache" -type d -exec chmod 775 {} \; || true
+sudo chown -R "${USER}":www-data storage bootstrap/cache
+sudo find storage -type d -exec chmod 775 {} \;
+sudo find bootstrap/cache -type d -exec chmod 775 {} \;
 
 ### === Apache ===
 log "Installing and enabling Apache"
