@@ -54,6 +54,10 @@ if ! need_cmd composer; then
   rm composer-setup.php
 fi
 
+### === Nodejs and npm ===
+log "Installing nodejs and npm"
+sudo apt-get install -y nodejs npm
+
 ### === Project directory ===
 log "Preparing project directory at ${PROJECT_DIR}"
 sudo mkdir -p "${PROJECT_DIR}"
@@ -78,9 +82,18 @@ fi
 ### === Laravel dependencies ===
 log "Installing Laravel dependencies with Composer"
 if [ -f composer.json ]; then
-  composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+  composer install --no-interaction --prefer-dist --optimize-autoloader
 else
   log "composer.json not found. Ensure your Laravel code is in ${PROJECT_DIR}"
+fi
+
+### === Build frontend ===
+log "Installing javascript dependencies and building frontend"
+if [ -f package.json ]; then
+  npm install && npm run build
+  rm -rf node_modules
+else
+  log "package.json not found. Ensure your Laravel code is in ${PROJECT_DIR}"
 fi
 
 ### === Optimize Laravel cache ===
