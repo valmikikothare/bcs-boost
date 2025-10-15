@@ -60,17 +60,32 @@ log "Installing nodejs and npm"
 apt-get install -y nodejs npm
 
 ### === Apache ===
-log "Installing Apache"
+log "Installing and enabling Apache"
 if ! apt-cache policy | grep -qi "ondrej/apache2"; then
     add-apt-repository -y ppa:ondrej/apache2 || true
     apt-get update -y
 fi
+
 apt-get install -y apache2
+systemctl enable apache2
+systemctl start apache2
+a2enmod rewrite headers ssl
 
 ### === Snap ===
+log "Installing snap"
 if ! need_cmd snap; then
     apt-get install -y snapd
 fi
+sudo snap install core && sudo snap refresh core
+
+### === Certbot ===
+log "Installing Certbot"
+if snap list | grep -q certbot; then
+    echo "Certbot already installed via snap"
+else
+    snap install --classic certbot
+fi
+ln -sf /snap/bin/certbot /usr/bin/certbot
 
 ### === Create project directory if it does not exist ===
 log "Preparing project directory at ${PROJECT_DIR}"
@@ -87,6 +102,8 @@ chown -R "${USER_NAME}":"${USER_NAME}" "${PROJECT_DIR}"
 
 ### === Run project clone, build, and install as non-root user ===
 sudo -u "${USER_NAME}" -i <<EOF
+set -eo pipefail
+
 log(){ echo -e "\n==== \$* ====\n"; }
 
 ### === Clone repo into project directory ===
@@ -109,10 +126,10 @@ rm -rf node_modules
 
 ### === Laravel dependencies ===
 log "Installing Laravel dependencies with Composer"
-sudo -u "${USER_NAME}" bash -c "composer install --no-interaction --prefer-dist --optimize-autoloader"
+composer install --no-interaction --prefer-dist --optimize-autoloader
 
 ### === Optimize Laravel cache ===
-log "Optimizing laravel caches
+log "Optimizing laravel caches"
 php artisan optimize:clear
 php artisan optimize
 
@@ -122,12 +139,6 @@ sudo chown -R "${USER_NAME}":www-data storage bootstrap/cache
 find storage -type d -exec chmod 775 {} \;
 find bootstrap/cache -type d -exec chmod 775 {} \;
 EOF
-
-### === Enable Apache ===
-log "Enabling Apache"
-systemctl enable apache2
-systemctl start apache2
-a2enmod rewrite headers ssl
 
 ### === Apache vhost for Laravel (DocumentRoot -> public) ===
 log "Creating Apache vhost for ${DOMAIN}"
@@ -164,19 +175,9 @@ ufw allow OpenSSH || true
 ufw allow 'Apache Full' || true
 echo "y" | ufw enable || true
 
-
 ### === Encrypt SSL ===
 log "Installing Certbot and obtaining SSL certificate for ${DOMAIN}"
-sudo -u "${USER_NAME}" -i <<EOF
-snap install core && snap refresh core
-if snap list | grep -q certbot; then
-    echo "Certbot already installed via snap"
-else
-    snap install --classic certbot
-fi
-ln -sf /snap/bin/certbot /usr/bin/certbot
 certbot --apache -d "${DOMAIN}" --redirect --agree-tos -m "admin@${DOMAIN}" -n || true
-EOF
 
 ### === Final restart ===
 log "Restarting Apache"
