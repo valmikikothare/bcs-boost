@@ -164,7 +164,7 @@ else
   sudo snap install --classic certbot
 fi
 sudo ln -sf /snap/bin/certbot /usr/bin/certbot
-sudo certbot --apache -d "${DOMAIN}" --redirect --agree-tos -m "admin@${DOMAIN}" -n
+sudo certbot --apache -d "${DOMAIN}" --redirect --agree-tos -m "admin@${DOMAIN}" -n || true
 
 
 ### === Final restart ===
