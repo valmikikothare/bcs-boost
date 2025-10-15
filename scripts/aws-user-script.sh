@@ -99,9 +99,8 @@ fi
 ### === Optimize Laravel cache ===
 if [ -f "${PROJECT_DIR}/artisan" ]; then
   log "Optimizing laravel caches"
-  php "${PROJECT_DIR}/artisan" config:cache || true
-  php "${PROJECT_DIR}/artisan" route:cache || true
-  php "${PROJECT_DIR}/artisan" view:cache || true
+  php "${PROJECT_DIR}/artisan" optimize:clear
+  php "${PROJECT_DIR}/artisan" optimize
 fi
 
 ### === Laravel permissions ===
