@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/bash
+
 set -euo pipefail
 
 ### === CONFIG ===
@@ -6,6 +7,7 @@ DOMAIN="bcs-boost.mit.edu"
 PROJECT_DIR="/var/www/html" # Laravel project path
 GIT_REPO_URL="https://github.com/valmikikothare/bcs-boost.git" # Optional: set if you want to auto-clone
 APACHE_CONF="/etc/apache2/sites-available/${DOMAIN}.conf"
+USER="ubuntu"
 PHP_VERSION="8.2"
 
 ### === Helpers ===
@@ -14,29 +16,29 @@ need_cmd(){ command -v "$1" >/dev/null 2>&1 || return 1; }
 
 ### === System update ===
 log "Updating system packages"
-sudo apt-get update -y
-sudo apt-get upgrade -y
+apt-get update -y
+apt-get upgrade -y
 
 ### === Basic tools ===
 log "Installing basic utilities"
-sudo apt-get install -y software-properties-common curl zip unzip git ufw
+apt-get install -y software-properties-common curl zip unzip git ufw
 
 
 ### === PHP 8.2 & extensions ===
 log "Installing PHP ${PHP_VERSION} and common extensions for Laravel"
 if ! apt-cache policy | grep -qi "ondrej/php"; then
-  sudo add-apt-repository -y ppa:ondrej/php || true
-  sudo apt-get update -y
+  add-apt-repository -y ppa:ondrej/php || true
+  apt-get update -y
 fi
 
-sudo apt-get install -y \
+apt-get install -y \
   php${PHP_VERSION} php${PHP_VERSION}-cli php${PHP_VERSION}-common \
   php${PHP_VERSION}-mbstring php${PHP_VERSION}-xml php${PHP_VERSION}-zip \
   php${PHP_VERSION}-curl php${PHP_VERSION}-gd php${PHP_VERSION}-intl \
   php${PHP_VERSION}-bcmath php${PHP_VERSION}-mysql
 
 if need_cmd update-alternatives; then
-  sudo update-alternatives --set php /usr/bin/php${PHP_VERSION} || true
+  update-alternatives --set php /usr/bin/php${PHP_VERSION} || true
 fi
 
 ### === Composer ===
@@ -50,19 +52,19 @@ if ! need_cmd composer; then
     rm composer-setup.php
     exit 1
   fi
-  sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+  php composer-setup.php --install-dir=/usr/local/bin --filename=composer
   rm composer-setup.php
 fi
 
 ### === Nodejs and npm ===
 log "Installing nodejs and npm"
-sudo apt-get install -y nodejs npm
+apt-get install -y nodejs npm
 
 ### === Project directory ===
 log "Preparing project directory at ${PROJECT_DIR}"
-sudo rm -rf "${PROJECT_DIR}"
-sudo mkdir -p "${PROJECT_DIR}"
-sudo chown -R "${USER}":"${USER}" "${PROJECT_DIR}"
+rm -rf "${PROJECT_DIR}"
+mkdir -p "${PROJECT_DIR}"
+chown -R "${USER}":"${USER}" "${PROJECT_DIR}"
 git clone "${GIT_REPO_URL}" "${PROJECT_DIR}"
 cd "${PROJECT_DIR}"
 
@@ -86,20 +88,20 @@ php artisan optimize
 
 ### === Laravel permissions ===
 log "Setting Laravel storage and cache permissions"
-sudo chown -R "${USER}":www-data storage bootstrap/cache
-sudo find storage -type d -exec chmod 775 {} \;
-sudo find bootstrap/cache -type d -exec chmod 775 {} \;
+chown -R "${USER}":www-data storage bootstrap/cache
+find storage -type d -exec chmod 775 {} \;
+find bootstrap/cache -type d -exec chmod 775 {} \;
 
 ### === Apache ===
 log "Installing and enabling Apache"
-sudo apt-get install -y apache2
-sudo systemctl enable apache2
-sudo systemctl start apache2
-sudo a2enmod rewrite headers ssl
+apt-get install -y apache2
+systemctl enable apache2
+systemctl start apache2
+a2enmod rewrite headers ssl
 
 ### === Apache vhost for Laravel (DocumentRoot -> public) ===
 log "Creating Apache vhost for ${DOMAIN}"
-sudo bash -c "cat > '${APACHE_CONF}'" <<EOF
+bash -c "cat > '${APACHE_CONF}'" <<EOF
 <VirtualHost *:80>
     ServerName ${DOMAIN}
 
@@ -122,33 +124,33 @@ sudo bash -c "cat > '${APACHE_CONF}'" <<EOF
 </VirtualHost>
 EOF
 
-sudo a2dissite 000-default.conf || true
-sudo a2ensite "${DOMAIN}.conf"
-sudo systemctl reload apache2
+a2dissite 000-default.conf || true
+a2ensite "${DOMAIN}.conf"
+systemctl reload apache2
 
 ### === UFW firewall ===
 log "Configuring UFW to allow SSH and Apache"
-sudo ufw allow OpenSSH || true
-sudo ufw allow 'Apache Full' || true
-echo "y" | sudo ufw enable || true
+ufw allow OpenSSH || true
+ufw allow 'Apache Full' || true
+echo "y" | ufw enable || true
 
 ### === Let's Encrypt SSL ===
 log "Installing Certbot and obtaining SSL certificate for ${DOMAIN}"
 if ! need_cmd snap; then
-  sudo apt-get install -y snapd
+  apt-get install -y snapd
 fi
-sudo snap install core && sudo snap refresh core
+snap install core && snap refresh core
 if snap list | grep -q certbot; then
   log "Certbot already installed via snap"
 else
-  sudo snap install --classic certbot
+  snap install --classic certbot
 fi
-sudo ln -sf /snap/bin/certbot /usr/bin/certbot
-sudo certbot --apache -d "${DOMAIN}" --redirect --agree-tos -m "admin@${DOMAIN}" -n || true
+ln -sf /snap/bin/certbot /usr/bin/certbot
+certbot --apache -d "${DOMAIN}" --redirect --agree-tos -m "admin@${DOMAIN}" -n || true
 
 
 ### === Final restart ===
 log "Restarting Apache"
-sudo systemctl restart apache2
+systemctl restart apache2
 
 log "All done! Site should be available at: https://${DOMAIN}"
