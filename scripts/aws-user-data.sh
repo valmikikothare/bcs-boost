@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euo pipefail
+set -eo pipefail
 
 ### === CONFIG ===
 DOMAIN="bcs-boost.mit.edu"
@@ -19,54 +19,81 @@ log "Updating system packages"
 apt-get update -y
 apt-get upgrade -y
 
-### === Basic tools ===
+### === Install basic tools ===
 log "Installing basic utilities"
 apt-get install -y software-properties-common curl zip unzip git ufw
 
-### === PHP 8.2 & extensions ===
+### === Install PHP 8.2 & extensions ===
 log "Installing PHP ${PHP_VERSION} and common extensions for Laravel"
 if ! apt-cache policy | grep -qi "ondrej/php"; then
-  add-apt-repository -y ppa:ondrej/php || true
-  apt-get update -y
+    add-apt-repository -y ppa:ondrej/php || true
+    apt-get update -y
 fi
 
 apt-get install -y \
-  php${PHP_VERSION} php${PHP_VERSION}-cli php${PHP_VERSION}-common \
-  php${PHP_VERSION}-mbstring php${PHP_VERSION}-xml php${PHP_VERSION}-zip \
-  php${PHP_VERSION}-curl php${PHP_VERSION}-gd php${PHP_VERSION}-intl \
-  php${PHP_VERSION}-bcmath php${PHP_VERSION}-mysql
+    php${PHP_VERSION} php${PHP_VERSION}-cli php${PHP_VERSION}-common \
+    php${PHP_VERSION}-mbstring php${PHP_VERSION}-xml php${PHP_VERSION}-zip \
+    php${PHP_VERSION}-curl php${PHP_VERSION}-gd php${PHP_VERSION}-intl \
+    php${PHP_VERSION}-bcmath php${PHP_VERSION}-mysql
 
 if need_cmd update-alternatives; then
-  update-alternatives --set php /usr/bin/php${PHP_VERSION} || true
+    update-alternatives --set php /usr/bin/php${PHP_VERSION} || true
 fi
 
-### === Composer ===
+### === Install omposer ===
 log "Installing Composer"
 if ! need_cmd composer; then
-  EXPECTED_CHECKSUM="$(curl -fsSL https://composer.github.io/installer.sig)"
-  php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-  ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
-  if [ "${EXPECTED_CHECKSUM}" != "${ACTUAL_CHECKSUM}" ]; then
-    echo 'ERROR: Invalid Composer installer checksum' >&2
+    EXPECTED_CHECKSUM="$(curl -fsSL https://composer.github.io/installer.sig)"
+    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+    ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
+    if [ "${EXPECTED_CHECKSUM}" != "${ACTUAL_CHECKSUM}" ]; then
+        echo 'ERROR: Invalid Composer installer checksum' >&2
+        rm composer-setup.php
+        exit 1
+    fi
+    php composer-setup.php --install-dir=/usr/local/bin --filename=composer
     rm composer-setup.php
-    exit 1
-  fi
-  php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-  rm composer-setup.php
 fi
 
 ### === Nodejs and npm ===
 log "Installing nodejs and npm"
 apt-get install -y nodejs npm
 
-log "Preparing project directory at ${PROJECT_DIR}"
-if [ ! -f "${PROJECT_DIR}/composer.json" ] || [ ! -f "${PROJECT_DIR}/package.json" ] || [ ! -f "${PROJECT_DIR}/artisan" ]; then
-    rm -rf "${PROJECT_DIR}"
-    mkdir -p "${PROJECT_DIR}"
+### === Apache ===
+log "Installing Apache"
+if ! apt-cache policy | grep -qi "ondrej/apache2"; then
+    add-apt-repository -y ppa:ondrej/apache2 || true
+    apt-get update -y
+fi
+apt-get install -y apache2
+
+### === Snap ===
+if ! need_cmd snap; then
+    apt-get install -y snapd
 fi
 
-### === Project directory ===
-git clone "${GIT_REPO_URL}" "${PROJECT_DIR}"
+### === Create project directory if it does not exist ===
+log "Preparing project directory at ${PROJECT_DIR}"
+if [ ! -f "${PROJECT_DIR}/composer.json" ] || \
+   [ ! -f "${PROJECT_DIR}/package.json" ] || \
+   [ ! -f "${PROJECT_DIR}/artisan" ] || \
+   [ ! -f "${PROJECT_DIR}/.env.example" ]
+then
+    rm -rf "${PROJECT_DIR}"
+    mkdir -p "${PROJECT_DIR}"
+    CLONE_REPO=true
+fi
+chown -R "${USER_NAME}":"${USER_NAME}" "${PROJECT_DIR}"
+
+### === Run project clone, build, and install as non-root user ===
+sudo -u "${USER_NAME}" -i <<EOF
+log(){ echo -e "\n==== \$* ====\n"; }
+
+### === Clone repo into project directory ===
+if [ -n "${CLONE_REPO}" ]; then
+    log "Cloning ${GIT_REPO_URL} into ${PROJECT_DIR}"
+    git clone "${GIT_REPO_URL}" "${PROJECT_DIR}"
+fi
 cd "${PROJECT_DIR}"
 
 ### === Copy .env.example ===
@@ -80,52 +107,50 @@ log "Installing javascript dependencies and building frontend"
 npm install && npm run build
 rm -rf node_modules
 
-chown -R "${USER_NAME}":"${USER_NAME}" "${PROJECT_DIR}"
-
 ### === Laravel dependencies ===
 log "Installing Laravel dependencies with Composer"
-sudo -u "${USER_NAME}" composer install --no-interaction --prefer-dist --optimize-autoloader
+sudo -u "${USER_NAME}" bash -c "composer install --no-interaction --prefer-dist --optimize-autoloader"
 
 ### === Optimize Laravel cache ===
-log "Optimizing laravel caches"
-sudo -u "${USER_NAME}" php artisan optimize:clear
-sudo -u "${USER_NAME}" php artisan optimize
+log "Optimizing laravel caches
+php artisan optimize:clear
+php artisan optimize
 
 ### === Laravel permissions ===
 log "Setting Laravel storage and cache permissions"
-chown -R "${USER_NAME}":www-data storage bootstrap/cache
+sudo chown -R "${USER_NAME}":www-data storage bootstrap/cache
 find storage -type d -exec chmod 775 {} \;
 find bootstrap/cache -type d -exec chmod 775 {} \;
+EOF
 
-### === Apache ===
-log "Installing and enabling Apache"
-apt-get install -y apache2
+### === Enable Apache ===
+log "Enabling Apache"
 systemctl enable apache2
 systemctl start apache2
 a2enmod rewrite headers ssl
 
 ### === Apache vhost for Laravel (DocumentRoot -> public) ===
 log "Creating Apache vhost for ${DOMAIN}"
-bash -c "cat > '${APACHE_CONF}'" <<EOF
+cat > "${APACHE_CONF}" <<EOF
 <VirtualHost *:80>
-    ServerName ${DOMAIN}
+ServerName ${DOMAIN}
 
-    ServerAdmin admin@${DOMAIN}
-    DocumentRoot ${PROJECT_DIR}/public
+ServerAdmin admin@${DOMAIN}
+DocumentRoot ${PROJECT_DIR}/public
 
-    <Directory ${PROJECT_DIR}/public>
-        AllowOverride All
-        Require all granted
-        Options FollowSymLinks
-    </Directory>
+<Directory ${PROJECT_DIR}/public>
+AllowOverride All
+Require all granted
+Options FollowSymLinks
+</Directory>
 
-    ErrorLog \${APACHE_LOG_DIR}/${DOMAIN}-error.log
-    CustomLog \${APACHE_LOG_DIR}/${DOMAIN}-access.log combined
+ErrorLog \${APACHE_LOG_DIR}/${DOMAIN}-error.log
+CustomLog \${APACHE_LOG_DIR}/${DOMAIN}-access.log combined
 
-    <IfModule mod_headers.c>
-        Header always set X-Frame-Options SAMEORIGIN
-        Header always set X-Content-Type-Options nosniff
-    </IfModule>
+<IfModule mod_headers.c>
+Header always set X-Frame-Options SAMEORIGIN
+Header always set X-Content-Type-Options nosniff
+</IfModule>
 </VirtualHost>
 EOF
 
@@ -139,22 +164,23 @@ ufw allow OpenSSH || true
 ufw allow 'Apache Full' || true
 echo "y" | ufw enable || true
 
-### === Let's Encrypt SSL ===
+
+### === Encrypt SSL ===
 log "Installing Certbot and obtaining SSL certificate for ${DOMAIN}"
-if ! need_cmd snap; then
-  apt-get install -y snapd
-fi
+sudo -u "${USER_NAME}" -i <<EOF
 snap install core && snap refresh core
 if snap list | grep -q certbot; then
-  log "Certbot already installed via snap"
+    echo "Certbot already installed via snap"
 else
-  snap install --classic certbot
+    snap install --classic certbot
 fi
 ln -sf /snap/bin/certbot /usr/bin/certbot
 certbot --apache -d "${DOMAIN}" --redirect --agree-tos -m "admin@${DOMAIN}" -n || true
+EOF
 
 ### === Final restart ===
 log "Restarting Apache"
 systemctl restart apache2
 
 log "All done! Site should be available at: https://${DOMAIN}"
+
