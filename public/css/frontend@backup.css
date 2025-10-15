@@ -1,0 +1,153 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+}
+
+:root {
+    --success: #00C838;
+    --primary: #FFA34F;
+    --dark: #000;
+}
+
+.bg-secondary {
+    background-color: var(--bs-warning);
+}
+
+.btn-primary {
+    background-color: var(--success);
+    border-color: var(--success);
+}
+
+.btn-primary:hover {
+    background-color: var(--success);
+    border-color: var(--success);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+    margin: 0;
+}
+
+a {
+    text-decoration: none;
+}
+
+ul {
+    margin: 0;
+}
+
+.header .navbar-toggler{
+    border: 2px solid var(--primary);
+}
+
+.header .navbar-toggler:focus{
+    box-shadow: none;
+}
+
+.header .navbar-nav .nav-item .nav-link {
+    color: var(--dark);
+    font-weight: 400;
+    text-transform: uppercase;
+}
+
+.header .navbar-nav .nav-item button {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.banner {
+    background-image: url('/images/banner.jpg');
+    padding: 150px 0;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.banner_search_box input {
+    padding: 12px 0 12px 65px;
+    font-size: 16px;
+}
+
+.banner_search_box span {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 30px;
+    color: var(--success);
+}
+
+.recipes_section .owl-dots {
+    text-align: center;
+    display: flex;
+    gap: 10px;
+    padding-top: 20px;
+    justify-content: center;
+}
+
+.recipes_section .owl-dots .owl-dot {
+    height: 12px;
+    width: 12px;
+    background-color: #d9d9d9;
+    border-radius: 50px;
+}
+
+.recipes_section .owl-dots .owl-dot.active {
+    background-color: var(--primary);
+}
+
+.recipes_email_input input {
+    padding: 12px 60px 12px 30px;
+}
+
+.recipes_email_input button {
+    position: absolute;
+    top: 50%;
+    right: 30px;
+    transform: translateY(-50%);
+    color: var(--primary);
+}
+
+.social_links li a{
+    display: inline-block;
+    height: 30px;
+    width: 30px;
+    text-align: center;
+    line-height: 30px;
+    background-color: var(--primary);
+    color: #fff;
+    border-radius: 50%;
+    transition: .5s;
+}
+
+.social_links li a:hover{
+    transform: translateY(-6px);
+    transition: .5s;
+}
+
+.footer_links ul li a{
+    padding-bottom: 5px;
+    display: inline-block;
+    color: #9d9797;
+}
+
+.footer_links ul li a:hover{
+    color: var(--primary);
+}
+
+@media (max-width:767px){
+    .banner{
+        padding: 45px 0;
+    }
+}
+
+@media (max-width:991px){
+    .header .navbar-nav{
+        text-align: center;
+        padding: 10px 0 20px;
+    }
+}

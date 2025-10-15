@@ -1,0 +1,181 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\SlotController;
+use App\Http\Controllers\MemberController;
+use App\Http\Controllers\Auth\SocialController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\CronsController;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make something great!
+|
+*/
+// Non login Pages
+Route::get('/', [HomeController::class, 'home_page'])->name('home_page');
+Route::POST('food_item_suggestions', [HomeController::class, 'food_item_suggestions'])->name('food_item_suggestions');
+ Route::get('/how-to-use-this-site', [MemberController::class, 'howtousethissite'])->name('user.howtousethissite');
+
+Route::POST('forgetpassword', [HomeController::class, 'forgetpassword'])->name('forgetpassword');
+
+Route::post('/set-locale', [HomeController::class, 'setLocale'])->name('set-locale');
+
+Route::get('login/facebook', [SocialController::class, 'redirectToFacebook']);
+Route::get('facebook/callback', [SocialController::class, 'handleFacebookCallback']);
+
+Route::get('login/instagram', [SocialController::class, 'redirectToInstagram']);
+Route::get('login/instagram/callback', [SocialController::class, 'handleInstagramCallback']);
+
+Route::get('login/google', [SocialController::class, 'redirectToGoogle']);
+Route::get('auth/google/callback', [SocialController::class, 'handleGoogleCallback']);
+
+
+Route::get('/generate_random_dish', [HomeController::class, 'generate_random_dish'])->name('generate_random_dish');
+Route::get('contact', [HomeController::class, 'contact'])->name('views.contact');
+Route::get('Contact_Data', [HomeController::class, 'Contact_us'])->name('Contact_Data');
+
+Route::get('about', [HomeController::class, 'about'])->name('about');
+Route::get('privacypolicy', [HomeController::class, 'privacypolicy'])->name('views.privacypolicy');
+Route::get('faq', [HomeController::class, 'faq'])->name('views.faq');
+Route::get('terms', [HomeController::class, 'terms'])->name('views.terms');
+Route::get('forums', [HomeController::class, 'forums'])->name('views.forums');
+Route::Post('store_forum', [HomeController::class, 'store_forum'])->name('views.store_forum');
+Route::Post('store_forum_answer', [HomeController::class, 'store_forum_answer'])->name('views.store_forum_answer');
+Route::get('forumdetails/{id?}', [HomeController::class, 'forumdetails'])->name('views.forumdetails');
+
+
+Route::get('editreply/{id}', [HomeController::class, 'editreply'])->name('views.editreply');
+Route::delete('deletereply/{id}', [HomeController::class, 'deletereply'])->name('views.deletereply');
+Route::Patch('updatereply/{id}', [HomeController::class, 'updatereply'])->name('views.updatereply');
+
+Route::post('like/{type}/{id}', [HomeController::class, 'like'])->name('like');
+Route::post('dislike/{type}/{id}', [HomeController::class, 'dislike'])->name('dislike');
+
+
+Route::get('dishdetails/{id?}', [HomeController::class, 'dishdetails'])->name('dishdetails');
+Route::get('viewallcuisine', [HomeController::class, 'viewallcuisine'])->name('viewallcuisine');
+Route::get('emailsave', [HomeController::class, 'save_email'])->name('emailsave');
+Route::get('/add_suggestion_dish', [MemberController::class, 'add_suggestion_dish'])->name('add_suggestion_dish');
+Route::get('/per_day', [MemberController::class, 'per_day'])->name('per_day');
+
+Route::get('ip_address', [HomeController::class, 'ip_address'])->name('ip_address');
+Route::get('dishes_menu/{kitchen}', [HomeController::class, 'dishes_menu'])->name('dishes_menu');
+
+
+
+
+Auth::routes();
+Route::group(['middleware' => ['auth', 'rolecheck', 'admin.locale']], function () {
+    //Admin Users
+    Route::get('/home', [UserController::class, 'admin_dashboard'])->name('home');
+    Route::get('users', [UserController::class, 'user_list'])->name('users.index');
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+    Route::post('/users/destroy', [UserController::class, 'destroy'])->name('users.destroy');
+    Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::get('/users/{id}/update', [UserController::class, 'update'])->name('users.update');
+    Route::get('/users/show', [UserController::class, 'show'])->name('users.show');
+    Route::post('/users/store', [UserController::class, 'store'])->name('users.store');
+
+    Route::prefix('slots')->name('slots.')->group(function () {
+        Route::get('/', [SlotController::class, 'index'])->name('index');
+        Route::post('/', [SlotController::class, 'store'])->name('store');
+        Route::get('/{slot}/edit', [SlotController::class, 'edit'])->name('edit');
+        Route::post('/{slot}', [SlotController::class, 'update'])->name('update');
+    });
+    Route::get('/attendees/{id}', [SlotController::class, 'view_attendees'])->name('view_attendees');
+    Route::delete('/slots/{id}', [SlotController::class, 'destroy'])->name('slots.destroy');
+    Route::get('slots/{slot}/leads', [SlotController::class, 'showLeads'])->name('slots.leads');
+    Route::post('slots/leads/{lead}/approve', [SlotController::class, 'approveLead'])->name('slots.leads.approve');
+    Route::post('/slots/{id}/approve', [SlotController::class, 'approve'])->name('slots.approve');
+
+    Route::get('/markas_complete/{id}', [SlotController::class, 'markas_complete'])->name('slots.markas_complete');
+
+    
+
+
+
+
+
+    Route::get('profile', [\App\Http\Controllers\ProfileController::class, 'show'])->name('profile.show');
+    Route::put('profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+
+
+    Route::post('/set-admin-locale', [UserController::class, 'setAdminLocale'])->name('set-admin-locale');
+
+
+});
+
+//Front User Login Pages
+Route::group(['middleware' => ['auth', 'noadmin']], function () {
+    Route::get('/dashboard', [MemberController::class, 'dashboard'])->name('dashboard');
+
+    Route::get('/userprofile', [MemberController::class, 'userprofile'])->name('userprofile');
+
+    Route::get('/change-password', [MemberController::class, 'change_password'])->name('changepassword');
+    Route::post('/users/{id}/update-password', [MemberController::class, 'updatepassword'])->name('updatepassword');
+    Route::get('/profile/update/{id}', [MemberController::class, 'updateprofile'])->name('updateprofile');
+    Route::delete('/unregister/{id}', [MemberController::class, 'unregister'])->name('unregister');
+    Route::get('check-active-slot', [MemberController::class, 'checkActiveSlots']);
+
+    Route::get('/leadmanagement', [MemberController::class, 'leadmanagement'])->name('user.leadmanagement');
+    Route::get('/availableslots', [MemberController::class, 'availableslots'])->name('user.availableslots');
+    Route::get('/user-dashboard', [MemberController::class, 'user_dashboard'])->name('user.user_dashboard');
+
+    
+    Route::get('/book-a-session', [MemberController::class, 'book_session_list'])->name('user.book_session_list');
+    Route::get('/booking-history', [MemberController::class, 'bookingHistorylist'])->name('user.bookingHistorylist');
+    Route::get('/cancelBookingById/{id}/{slot_id}', [MemberController::class, 'cancelBookingById'])->name('user.cancelBookingById');
+
+    
+
+
+    Route::post('/bookasession', [MemberController::class, 'bookasession'])->name('bookasession');
+
+
+
+    Route::get('/leadmanagement/search', [MemberController::class, 'leadmanagement'])->name('leadmanagement.search');
+
+
+
+    Route::post('/sessionleads/store', [MemberController::class, 'store'])->name('sessionleads.store');
+
+    Route::post('/check-slot-status', [MemberController::class, 'checkSlotStatus'])->name('check.slot.status');
+
+
+
+
+
+
+
+
+
+
+
+});
+
+
+Route::group(['middleware' => ['auth']], function () {
+    Route::post('/logout', [HomeController::class, 'logout'])->name('logout');
+});
+
+
+Route::get('/verify-email/{token}', [RegisterController::class, 'verifyEmail'])->name('verify.email');
+
+
+
+Route::get('/run-session-email-job', [CronsController::class, 'storeUpcomingSessionEmailsToJobs']);
+
+Route::get('/send-session-reminders', [CronsController::class, 'sendSessionReminderEmails']);
+
+
+
+Route::get('/run-every-5min', [CronsController::class, 'run_every_5min']);
+Route::get('/run-every-day', [CronsController::class, 'run_every_day']);
