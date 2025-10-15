@@ -70,7 +70,14 @@ else
   log "Skipping clone (either repo URL not set or directory not empty)."
 fi
 cd "${PROJECT_DIR}"
-cp .env.example .env
+
+### === Laravel dependencies ===
+log "Installing Laravel dependencies with Composer"
+if [ ! -f .env ] && [ -f .env.example ]; then
+  cp .env.example .env
+else
+  log ".env.example not found. Ensure your Laravel code is in ${PROJECT_DIR}"
+fi
 
 ### === Laravel dependencies ===
 log "Installing Laravel dependencies with Composer"
