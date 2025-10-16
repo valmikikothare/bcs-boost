@@ -129,7 +129,7 @@ rm -rf node_modules
 
 ### === Laravel dependencies ===
 log "Installing Laravel dependencies with Composer"
-composer install --no-interaction --prefer-dist --optimize-autoloader
+composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
 
 ### === Optimize Laravel cache ===
 log "Optimizing laravel caches"
