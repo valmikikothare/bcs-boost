@@ -1,0 +1,26 @@
+name: boost
+
+services:
+  db:
+    image: mysql:latest
+    # restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: event_management_db
+    volumes:
+      - db-data:/var/lib/mysql
+  ws:
+    image: ubuntu/apache2:2.4-24.04_beta
+    ports:
+      - 8080:80
+    volumes:
+      - type: bind
+        source: ../
+        target: /var/www/html
+        consistency: cached
+    working_dir: /var/www/html
+    user: ubuntu
+    command: sleep infinity
+
+volumes:
+  db-data:
