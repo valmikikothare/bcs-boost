@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Intended to be ran as root user at initial instance boot
+
 set -eo pipefail
 
 ### === CONFIG ===
@@ -37,7 +39,7 @@ apt-get install -y \
     php${PHP_VERSION}-bcmath php${PHP_VERSION}-mysql
 
 if need_cmd update-alternatives; then
-    update-alternatives --set php /usr/bin/php${PHP_VERSION} || true
+    update-alternatives --set php /usr/bin/php${PHP_VERSION}
 fi
 
 ### === Nodejs and npm ===
@@ -61,7 +63,7 @@ log "Installing snap"
 if ! need_cmd snap; then
     apt-get install -y snapd
 fi
-sudo snap install core && sudo snap refresh core
+snap install core && snap refresh core
 
 ### === Certbot ===
 log "Installing Certbot"
@@ -172,9 +174,9 @@ systemctl reload apache2
 
 ### === UFW firewall ===
 log "Configuring UFW to allow SSH and Apache"
-ufw allow OpenSSH || true
-ufw allow 'Apache Full' || true
-echo "y" | ufw enable || true
+ufw allow OpenSSH
+ufw allow 'Apache Full'
+echo "y" | ufw enable
 
 ### === Encrypt SSL ===
 log "Installing Certbot and obtaining SSL certificate for ${DOMAIN}"
