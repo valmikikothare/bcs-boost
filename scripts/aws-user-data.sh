@@ -40,21 +40,6 @@ if need_cmd update-alternatives; then
     update-alternatives --set php /usr/bin/php${PHP_VERSION} || true
 fi
 
-### === Install omposer ===
-log "Installing Composer"
-if ! need_cmd composer; then
-    EXPECTED_CHECKSUM="$(curl -fsSL https://composer.github.io/installer.sig)"
-    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-    ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
-    if [ "${EXPECTED_CHECKSUM}" != "${ACTUAL_CHECKSUM}" ]; then
-        echo 'ERROR: Invalid Composer installer checksum' >&2
-        rm composer-setup.php
-        exit 1
-    fi
-    php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-    rm composer-setup.php
-fi
-
 ### === Nodejs and npm ===
 log "Installing nodejs and npm"
 apt-get install -y nodejs npm
@@ -105,6 +90,22 @@ sudo -u "${USER_NAME}" -i <<EOF
 set -eo pipefail
 
 log(){ echo -e "\n==== \$* ====\n"; }
+need_cmd(){ command -v "$1" >/dev/null 2>&1 || return 1; }
+
+### === Install omposer ===
+log "Installing Composer"
+if ! need_cmd composer; then
+    EXPECTED_CHECKSUM="$(curl -fsSL https://composer.github.io/installer.sig)"
+    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+    ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
+    if [ "${EXPECTED_CHECKSUM}" != "${ACTUAL_CHECKSUM}" ]; then
+        echo 'ERROR: Invalid Composer installer checksum' >&2
+        rm composer-setup.php
+        exit 1
+    fi
+    sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+    rm composer-setup.php
+fi
 
 ### === Clone repo into project directory ===
 if [ -n "${CLONE_REPO}" ]; then
