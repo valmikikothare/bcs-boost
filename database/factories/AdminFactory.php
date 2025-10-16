@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Hash;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -24,7 +23,8 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'verified_status' => 1,
             'password' => Hash::make('password'),
-            /* 'remember_token' => Str::random(10), */
+            'remember_token' => Str::random(10),
+            'role' => 1,
         ];
     }
 
@@ -35,7 +35,7 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
-            'verfied_status' => 0,
+            'verfied_status' => 1,
         ]);
     }
 }

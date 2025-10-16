@@ -3,15 +3,13 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\SuggestionDish;
-use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Notifications\Notifiable;
+use App\Notifications\CustomResetPasswordNotification;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use App\Notifications\CustomResetPasswordNotification;
-use Illuminate\Database\Eloquent\SoftDeletes; 
-
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
@@ -26,10 +24,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',
         'laboratory_name',
         'email_verification_token',
-        'verified_status'
     ];
 
     /**
@@ -50,18 +46,19 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'role' => 'integer',
+        'verified_status' => 'integer',
     ];
 
     /**
      * Interact with the user's first name.
      *
      * @param  string  $value
-     * @return \Illuminate\Database\Eloquent\Casts\Attribute
      */
     protected function type(): Attribute
     {
         return new Attribute(
-            get: fn($value) => ["user", "admin"][$value],
+            get: fn ($value) => ['user', 'admin'][$value],
         );
     }
 
@@ -70,7 +67,7 @@ class User extends Authenticatable
         return $this->role === 1;
     }
 
-       public function sessionLeads()
+    public function sessionLeads()
     {
         return $this->hasMany(SessionLeads::class, 'user_id');
     }
@@ -81,10 +78,9 @@ class User extends Authenticatable
         return $this->hasMany(BookingHistory::class, 'user_id');
     }
 
-// public function sendPasswordResetNotification($token)
-// {
-//     $this->notify(new CustomResetPasswordNotification($token));
-// }
-
+    // public function sendPasswordResetNotification($token)
+    // {
+    //     $this->notify(new CustomResetPasswordNotification($token));
+    // }
 
 }
