@@ -119,9 +119,8 @@ cd "${PROJECT_DIR}"
 
 ### === Copy .env.example ===
 if [ ! -f .env ]; then
-    log "Copying .env.example to .env and generating key"
+    log "Copying .env.example to .env"
     cp .env.example .env
-    php artisan key:generate
 fi
 
 ### === Build frontend ===
