@@ -81,6 +81,7 @@ if [ ! -f "${PROJECT_DIR}/composer.json" ] || \
    [ ! -f "${PROJECT_DIR}/artisan" ] || \
    [ ! -f "${PROJECT_DIR}/.env.example" ]
 then
+    log "Laravel project not found at ${PROJECT_DIR}, deleting existing contents"
     rm -rf "${PROJECT_DIR}"
     mkdir -p "${PROJECT_DIR}"
     CLONE_REPO=true
