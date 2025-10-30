@@ -1,0 +1,96 @@
+name: boost
+
+services:
+  db:
+    container_name: boost-db
+    image: mysql:latest
+    networks:
+      - net
+    volumes:
+      - db-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    restart: unless-stopped
+    # healthcheck:
+    #   test:
+    #     - CMD
+    #     - mysqladmin
+    #     - ping
+    #     - '-p${DB_PASSWORD}'
+    #   retries: 3
+    #   timeout: 5s
+
+  ws:
+    container_name: boost-ws
+    image: boost/build
+    build:
+      context: .
+      target: build
+    pull_policy: build
+    networks:
+      - net
+    ports:
+      - 8085:80
+    depends_on:
+      - db
+      # db:
+      #   condition: service_healthy
+    environment:
+      - APP_KEY=${APP_KEY}
+      - DB_PASSWORD=${DB_PASSWORD}
+    init: true
+    restart: unless-stopped
+    post_start:
+      - command: php artisan optimize
+        user: ubuntu
+    pre_stop:
+      - command: php artisan optimize:clear
+        user: ubuntu
+    develop:
+      watch:
+        - path: ./composer.json
+          action: rebuild
+        - path: ./package.json
+          action: rebuild
+        - path: ./.env.docker
+          action: rebuild
+        - path: ./app
+          action: rebuild
+        - path: ./bootstrap
+          action: rebuild
+        - path: ./config
+          action: rebuild
+        - path: ./images
+          action: rebuild
+        - path: ./images
+          action: rebuild
+
+  dev:
+    container_name: boost-dev
+    profiles: [ dev ]
+    image: boost/dev
+    ports:
+      - 8086:8000
+    build:
+      context: .
+      target: dev
+    networks:
+      - net
+    volumes:
+      - type: bind
+        source: .
+        target: /var/www/html
+    depends_on:
+      - db
+
+networks:
+  net:
+    driver: bridge
+
+volumes:
+  db-data:

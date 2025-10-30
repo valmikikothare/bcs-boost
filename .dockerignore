@@ -25,9 +25,16 @@ yarn-error.log
 /.idea
 /.nova
 /.vscode
-/.devcontainer
 /.zed
 
 # Local development
 *credentials.csv
 *.pem
+
+# Docker-specific
+/storage/logs/*
+/bootstrap/cache/*
+Dockerfile
+.dockerignore
+compose.yaml
+README.md
