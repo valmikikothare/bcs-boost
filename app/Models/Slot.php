@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use App\Models\BookingHistory;
@@ -65,5 +66,4 @@ class Slot extends Model
         return $this->hasOne(CancellationRequest::class, 'slot_id')
             ->where('user_id', auth()->id());
     }
-
 }

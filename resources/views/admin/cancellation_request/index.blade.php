@@ -44,16 +44,20 @@
                                             </button>
                                             <ul class="dropdown-menu" aria-labelledby="actionMenu{{ $request->id }}">
                                                 <li>
-                                                    <form
-                                                        action="{{ route('cancellation_requests.approve', $request->id) }}"
-                                                        method="POST">
-                                                        @csrf
-                                                        @method('PUT') {{-- Spoof the PUT method --}}
-                                                        <button type="submit" class="dropdown-item text-dark"
-                                                            @if ($request->cancellation_status == 1) disabled @endif>
-                                                            Confirm Request
+                                                    @if ($request->cancellation_status == 1)
+                                                        <button type="button" class="dropdown-item " disabled>
+                                                             Confirmed
                                                         </button>
-                                                    </form>
+                                                    @else
+                                                        <form action="{{ route('cancellation_requests.approve', $request->id) }}"
+                                                            method="POST">
+                                                            @csrf
+                                                            @method('PUT')
+                                                            <button type="submit" class="dropdown-item text-dark">
+                                                                Confirm Request
+                                                            </button>
+                                                        </form>
+                                                    @endif
                                                 </li>
                                             </ul>
 

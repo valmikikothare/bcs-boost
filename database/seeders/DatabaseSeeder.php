@@ -15,16 +15,16 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         User::firstOrCreate(
-            ['email' => 'admin@mit.edu'],
+            ['email' => 'bcs-boost@mit.edu'],
             [
                 'name' => 'admin',
                 'email_verified_at' => now(),
                 'verified_status' => 1,
-                'password' => Hash::make('password'),
+                'password' => Hash::make('abcd1234!'),
                 'role' => 1,
             ]
         );
 
-        User::factory(10)->create();
+        User::factory(5)->create();
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class RegisterController extends Controller
 {
@@ -60,7 +62,7 @@ class RegisterController extends Controller
                 'string',
                 'email',
                 'max:255',
-                'unique:users',
+                Rule::unique('users')->whereNull('deleted_at'),
                 'regex:/@mit\.edu$/',
             ],
             'password' => [
@@ -68,7 +70,7 @@ class RegisterController extends Controller
                 'string',
                 'min:8',
                 'confirmed',
-                'regex:/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&^()\-_=+{}\[\]|\:;"\'<>,.\/?]).{8,}$/'
+                'regex:/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&^()\-_=+{}\[\]|\:;"\'<>,.\/?]).{8,}$/',
             ],
         ], [
             'email.regex' => 'You must register with an @mit.edu email address.',
@@ -79,15 +81,16 @@ class RegisterController extends Controller
     /**
      * Create a new user instance after a valid registration.
      *
-     * @param  array  $data
      * @return \App\Models\User
      */
     protected function create(array $data)
     {
-        // Check if the user already exists based on the email
-        $user = User::where('email', $data['email'])->first();
+        // Check if the user already exists based on the email (excluding soft-deleted users)
+        $user = User::where('email', $data['email'])
+            ->whereNull('deleted_at')
+            ->first();
 
-        if (!$user) {
+        if (! $user) {
             // If the user doesn't exist, create a new user
             $user = User::create([
                 'name' => $data['name'],
@@ -142,7 +145,7 @@ class RegisterController extends Controller
     {
         $user = User::where('email_verification_token', $token)->first();
 
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('login')->with('error', 'Invalid or expired verification link.');
         }
 

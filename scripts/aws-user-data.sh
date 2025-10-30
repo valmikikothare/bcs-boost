@@ -28,7 +28,7 @@ apt-get install -y software-properties-common curl zip unzip git ufw
 ### === Install PHP 8.2 & extensions ===
 log "Installing PHP ${PHP_VERSION} and common extensions for Laravel"
 if ! apt-cache policy | grep -qi "ondrej/php"; then
-    add-apt-repository -y ppa:ondrej/php || true
+    add-apt-repository -y ppa:ondrej/php
     apt-get update -y
 fi
 
@@ -49,7 +49,7 @@ apt-get install -y nodejs npm
 ### === Apache ===
 log "Installing and enabling Apache"
 if ! apt-cache policy | grep -qi "ondrej/apache2"; then
-    add-apt-repository -y ppa:ondrej/apache2 || true
+    add-apt-repository -y ppa:ondrej/apache2
     apt-get update -y
 fi
 
@@ -94,7 +94,7 @@ set -eo pipefail
 log(){ echo -e "\n==== \$* ====\n"; }
 need_cmd(){ command -v "$1" >/dev/null 2>&1 || return 1; }
 
-### === Install omposer ===
+### === Install Composer ===
 log "Installing Composer"
 if ! need_cmd composer; then
     EXPECTED_CHECKSUM="$(curl -fsSL https://composer.github.io/installer.sig)"
@@ -117,14 +117,16 @@ fi
 cd "${PROJECT_DIR}"
 
 ### === Copy .env.example ===
-log "Copying .env.example to .env"
 if [ ! -f .env ]; then
+    log "Copying .env.example to .env and generating key"
     cp .env.example .env
+    php artisan key:generate
 fi
 
 ### === Build frontend ===
 log "Installing javascript dependencies and building frontend"
-npm install && npm run build
+npm install --no-audit --no-fund
+npm run build
 rm -rf node_modules
 
 ### === Laravel dependencies ===
@@ -139,8 +141,7 @@ php artisan optimize
 ### === Laravel permissions ===
 log "Setting Laravel storage and cache permissions"
 sudo chown -R "${USER_NAME}":www-data storage bootstrap/cache
-find storage -type d -exec chmod 775 {} \;
-find bootstrap/cache -type d -exec chmod 775 {} \;
+sudo chmod -R 775 storage bootstrap/cache
 EOF
 
 ### === Apache vhost for Laravel (DocumentRoot -> public) ===

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Mail\LeadApprovedMail;
@@ -209,7 +210,6 @@ class SlotController extends Controller
                 'success' => true,
                 'message' => 'Slot and related data deleted successfully.',
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -296,7 +296,7 @@ class SlotController extends Controller
                 }
             }
 
-                                 // Optionally, update the slot status
+            // Optionally, update the slot status
             $slot = $lead->slot; // Assuming relationship exists
             if ($slot) {
                 $slot->status = 1;
