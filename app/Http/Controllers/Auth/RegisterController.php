@@ -62,8 +62,8 @@ class RegisterController extends Controller
                 'string',
                 'email',
                 'max:255',
-                Rule::unique('users')->whereNull('deleted_at'),
-                'regex:/@mit\.edu$/',
+                // Rule::unique('users')->whereNull('deleted_at'),
+                // 'regex:/@mit\.edu$/',
             ],
             'password' => [
                 'required',
@@ -97,6 +97,7 @@ class RegisterController extends Controller
                 'email' => $data['email'],
                 'laboratory_name' => $data['laboratory_name'],
                 'password' => Hash::make($data['password']),
+                'role' => 2, // ✅ Always assign role = 2
             ]);
         }
 
@@ -146,7 +147,7 @@ class RegisterController extends Controller
         $user = User::where('email_verification_token', $token)->first();
 
         if (! $user) {
-            return redirect()->route('login')->with('error', 'Invalid or expired verification link.');
+            return redirect()->route('login')->with('error', 'Already Registered.');
         }
 
         $user->email_verified_at = now();

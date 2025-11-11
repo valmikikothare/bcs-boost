@@ -9,7 +9,7 @@
                 <h4 class="text-white m-0">Add User</h4>
             </div>
             <div>
-                <a class="btn btn-outline-primary" 
+                <a class="btn btn-outline-primary"
                     href="{{ route('users.index') }}">{{ __('admin.back') }}</a>
             </div>
         </div>
@@ -65,7 +65,7 @@
                             </div>
                         </div>
 
-                        <div class="col-xs-12 col-sm-12 col-md-12">
+                        {{-- <div class="col-xs-12 col-sm-12 col-md-12">
                             <div class="form-group">
                                 <strong>{{ __('admin.images') }}</strong>
                                 <input type="file" name="image" class="form-control-file">
@@ -73,7 +73,7 @@
                                     <div class="alert alert-danger mt-1 mb-1">{{ $message }}</div>
                                 @enderror
                             </div>
-                        </div>
+                        </div> --}}
 
 
                         <button type="submit" class="btn btn-primary ml-3">{{ __('admin.submit') }}</button>

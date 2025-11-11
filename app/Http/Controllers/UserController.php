@@ -219,7 +219,7 @@ class UserController extends Controller
                 'confirmed',
                 'regex:/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&^()\-_=+{}\[\]|\:;"\'<>,.\/?]).{8,}$/',
             ],
-            'image'    => 'image|mimes:jpeg,png,jpg,gif|max:100000', // 100 MB
+            'image'    => 'nullable|image|mimes:jpeg,png,jpg,gif|max:100000', // 100 MB
         ], [
             'email.regex'    => 'Only @mit.edu email addresses are allowed.',
             'password.regex' => 'Password must be at least 8 characters long and include at least one letter, one number, and one special character.',
@@ -229,6 +229,7 @@ class UserController extends Controller
         $user->name     = $validatedData['name'];
         $user->email    = $validatedData['email'];
         $user->password = Hash::make($validatedData['password']);
+         $user->role     = 2; // ✅ Always set role = 2
 
         if ($request->hasFile('image')) {
             $imageExtension = $request->file('image')->getClientOriginalExtension();
@@ -301,6 +302,8 @@ class UserController extends Controller
         $user->name            = $validatedData['name'];
         $user->email           = $validatedData['email'];
         $user->laboratory_name = $validatedData['laboratory_name'] ?? null;
+          // ✅ Ensure role always stays valid
+    $user->role = $user->role ?? 2; // If somehow null, set to 2
 
         if (! empty($validatedData['password'])) {
             $user->password = Hash::make($validatedData['password']);

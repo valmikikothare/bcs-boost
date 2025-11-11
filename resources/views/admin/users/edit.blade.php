@@ -80,7 +80,7 @@
                             <!-- End laboratory_name -->
 
 
-                            <div class="col-xs-12 col-sm-12 col-md-12">
+                            {{-- <div class="col-xs-12 col-sm-12 col-md-12">
                                 <div class="form-group">
                                     <strong>{{ __('admin.images') }}</strong>
                                     <input type="file" name="image" class="form-control">
@@ -96,7 +96,7 @@
                                             class="img-fluid" width="200">
                                     </div>
                                 @endif
-                            </div>
+                            </div> --}}
 
                             <button type="submit" class="btn btn-primary ml-3">{{ __('admin.submit') }}</button>
                         </div>

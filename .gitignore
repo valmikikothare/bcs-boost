@@ -31,3 +31,7 @@ yarn-error.log
 # Local development
 *credentials.csv
 *.pem
+composer.lock
+package-lock.json
+package.json
+/public
