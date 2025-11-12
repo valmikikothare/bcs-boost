@@ -91,15 +91,17 @@ class RegisterController extends Controller
             ->first();
 
         if (! $user) {
-            // If the user doesn't exist, create a new user
-            $user = User::create([
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'laboratory_name' => $data['laboratory_name'],
-                'password' => Hash::make($data['password']),
-                'role' => 2, // ✅ Always assign role = 2
-            ]);
-        }
+        $user = new User([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'laboratory_name' => $data['laboratory_name'],
+            'password' => Hash::make($data['password']),
+        ]);
+
+        // ✅ Assign role before saving
+        $user->role = 2;
+        $user->save();
+    }
 
         return $user;
     }
