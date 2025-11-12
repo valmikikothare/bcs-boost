@@ -62,8 +62,8 @@ class RegisterController extends Controller
                 'string',
                 'email',
                 'max:255',
-                // Rule::unique('users')->whereNull('deleted_at'),
-                // 'regex:/@mit\.edu$/',
+                Rule::unique('users')->whereNull('deleted_at'),
+                'regex:/@mit\.edu$/',
             ],
             'password' => [
                 'required',
