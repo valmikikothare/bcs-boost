@@ -134,11 +134,15 @@ log "Installing Laravel dependencies with Composer"
 composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
 EOF
 
+cd "${PROJECT_DIR}"
+
 ### === Optimize Laravel cache ===
 log "Optimizing laravel caches"
 php artisan optimize:clear
 php artisan schedule:clear-cache
 rm -rf storage/framework/sessions/*
+
+php artisan schedule:interrupt
 
 php artisan optimize
 php artisan view:cache

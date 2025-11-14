@@ -16,8 +16,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command(StoreReminderEmails::class)->dailyAt('09:00');
-        $schedule->command(SendReminderEmails::class)->withoutOverlapping()->everyFiveMinutes();
-        $schedule->command(SendCancellationEmails::class)->withoutOverlapping()->everyFiveMinutes();
+        $schedule->command(SendReminderEmails::class)->withoutOverlapping()->everyMinute();
+        $schedule->command(SendCancellationEmails::class)->withoutOverlapping()->everyMinute();
     }
 
     /**

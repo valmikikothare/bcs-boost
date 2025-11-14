@@ -16,6 +16,8 @@ rm -rf storage/framework/sessions/*
 php artisan optimize
 php artisan view:cache
 
+php artisan schedule:interrupt
+
 chown -R ubuntu:www-data storage bootstrap/cache
 chmod -R 775 storage bootstrap/cache
 
