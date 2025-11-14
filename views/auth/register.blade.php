@@ -9,14 +9,14 @@
     @media (max-width: 768px) {
         .login-box, .register-box {
             width: 90%;
-            margin: 0 auto; 
+            margin: 0 auto;
         }
     }
 
     @media (max-width: 480px) {
         .login-box, .register-box {
             width: 100%;
-            padding: 20px; 
+            padding: 20px;
         }
     }
 </style>

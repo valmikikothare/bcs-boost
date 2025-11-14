@@ -27,7 +27,7 @@
                                     <th>{{ __('admin.name') }}</th>
                                     <th>{{ __('admin.email') }}</th>
                                     <th>Laboratory or office </th>
-                                    <th>{{ __('admin.image') }} </th>
+                                    {{-- <th>{{ __('admin.image') }} </th> --}}
                                     <th>{{ __('admin.action') }}</th>
 
 
@@ -40,14 +40,14 @@
                                         <td>{{ $user->name }}</td>
                                         <td>{{ $user->email }}</td>
                                         <td>{{ $user->laboratory_name }}</td>
-                                        <td>
+                                        {{-- <td>
                                             @if ($user->image)
                                                 <img src="{{ asset('/admin/assets/images/' . $user->image) }}"
                                                     width="50">
                                             @else
                                                 No Image Available
                                             @endif
-                                        </td>
+                                        </td> --}}
                                         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
                                         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
                                         <script>

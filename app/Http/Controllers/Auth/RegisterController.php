@@ -91,13 +91,16 @@ class RegisterController extends Controller
             ->first();
 
         if (! $user) {
-            // If the user doesn't exist, create a new user
-            $user = User::create([
+            $user = new User([
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'laboratory_name' => $data['laboratory_name'],
                 'password' => Hash::make($data['password']),
             ]);
+
+            // Assign role before saving
+            $user->role = 2;
+            $user->save();
         }
 
         return $user;
@@ -146,7 +149,7 @@ class RegisterController extends Controller
         $user = User::where('email_verification_token', $token)->first();
 
         if (! $user) {
-            return redirect()->route('login')->with('error', 'Invalid or expired verification link.');
+            return redirect()->route('login')->with('error', 'Already Registered.');
         }
 
         $user->email_verified_at = now();

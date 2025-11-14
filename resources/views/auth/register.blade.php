@@ -9,14 +9,14 @@
     @media (max-width: 768px) {
         .login-box, .register-box {
             width: 90%;
-            margin: 0 auto; 
+            margin: 0 auto;
         }
     }
 
     @media (max-width: 480px) {
         .login-box, .register-box {
             width: 100%;
-            padding: 20px; 
+            padding: 20px;
         }
     }
 </style>
@@ -48,20 +48,34 @@
             @enderror
         </div>
 
-        <div class="input-group mb-3">
-            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                placeholder="{{ __('auth.email') }}" required autocomplete="email">
-            <div class="input-group-append">
-                <div class="input-group-text">
-                    <span class="fas fa-envelope"></span>
-                </div>
-            </div>
-            @error('email')
-                <span class="error invalid-feedback">
-                    {{ $message }}
-                </span>
-            @enderror
+        <div class="input-group mb-1">
+    <input
+        type="email"
+        name="email"
+        class="form-control @error('email') is-invalid @enderror"
+        placeholder="{{ __('auth.email') }}"
+        required
+        autocomplete="email"
+    >
+    <div class="input-group-append">
+        <div class="input-group-text">
+            <span class="fas fa-envelope"></span>
         </div>
+    </div>
+</div>
+
+{{-- ✅ Helper text (always visible below the field) --}}
+<small class="form-text text-muted">
+    You need to use an <strong>MIT email</strong> (ending with <code>@mit.edu</code>) to register.
+</small>
+
+{{-- Validation error message --}}
+@error('email')
+    <span class="error invalid-feedback d-block">
+        {{ $message }}
+    </span>
+@enderror
+
 
         <div class="input-group mb-3">
             <input type="password" name="password" class="form-control @error('password') is-invalid @enderror"

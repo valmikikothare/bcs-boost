@@ -49,7 +49,7 @@
                                     </div>
 
 
-                                    <div class="col-xs-12 col-sm-12 col-md-12">
+                                    {{-- <div class="col-xs-12 col-sm-12 col-md-12">
                                         <div class="form-group">
                                             <label class="form-label">{{ __('admin.images') }}</label>
                                             <input type="file" name="image" class="form-control">
@@ -62,7 +62,7 @@
                                                     alt="Current Image" class="img-fluid" width="200">
                                             </div>
                                         @endif
-                                    </div>
+                                    </div> --}}
 
                                     <div class="col-md-6">
                                         <input type="submit" value="{{ __('frontend.submit') }}"
