@@ -2,13 +2,13 @@
 
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\SocialController;
-use App\Http\Controllers\CronsController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\SlotController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\CronjobController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 /*
  * |--------------------------------------------------------------------------
@@ -20,58 +20,52 @@ use Illuminate\Support\Facades\Route;
  * | be assigned to the "web" middleware group. Make something great!
  * |
  */
-// Non login Pages
+
+// Deprecated pages
+/* Route::POST('food_item_suggestions', [HomeController::class, 'food_item_suggestions'])->name('food_item_suggestions'); */
+/* Route::get('login/facebook', [SocialController::class, 'redirectToFacebook']); */
+/* Route::get('facebook/callback', [SocialController::class, 'handleFacebookCallback']); */
+/* Route::get('login/instagram', [SocialController::class, 'redirectToInstagram']); */
+/* Route::get('login/instagram/callback', [SocialController::class, 'handleInstagramCallback']); */
+/* Route::get('login/google', [SocialController::class, 'redirectToGoogle']); */
+/* Route::get('auth/google/callback', [SocialController::class, 'handleGoogleCallback']); */
+/* Route::get('/generate_random_dish', [HomeController::class, 'generate_random_dish'])->name('generate_random_dish'); */
+/* Route::get('about', [HomeController::class, 'about'])->name('about'); */
+/* Route::get('privacypolicy', [HomeController::class, 'privacypolicy'])->name('views.privacypolicy'); */
+/* Route::get('terms', [HomeController::class, 'terms'])->name('views.terms'); */
+/* Route::get('forums', [HomeController::class, 'forums'])->name('views.forums'); */
+/* Route::Post('store_forum', [HomeController::class, 'store_forum'])->name('views.store_forum'); */
+/* Route::Post('store_forum_answer', [HomeController::class, 'store_forum_answer'])->name('views.store_forum_answer'); */
+/* Route::get('forumdetails/{id?}', [HomeController::class, 'forumdetails'])->name('views.forumdetails'); */
+/* Route::get('editreply/{id}', [HomeController::class, 'editreply'])->name('views.editreply'); */
+/* Route::delete('deletereply/{id}', [HomeController::class, 'deletereply'])->name('views.deletereply'); */
+/* Route::Patch('updatereply/{id}', [HomeController::class, 'updatereply'])->name('views.updatereply'); */
+/* Route::post('like/{type}/{id}', [HomeController::class, 'like'])->name('like'); */
+/* Route::post('dislike/{type}/{id}', [HomeController::class, 'dislike'])->name('dislike'); */
+/* Route::get('dishdetails/{id?}', [HomeController::class, 'dishdetails'])->name('dishdetails'); */
+/* Route::get('viewallcuisine', [HomeController::class, 'viewallcuisine'])->name('viewallcuisine'); */
+/* Route::get('emailsave', [HomeController::class, 'save_email'])->name('emailsave'); */
+/* Route::get('ip_address', [HomeController::class, 'ip_address'])->name('ip_address'); */
+/* Route::get('contact', [HomeController::class, 'contact'])->name('views.contact'); */
+/* Route::get('dishes_menu/{kitchen}', [HomeController::class, 'dishes_menu'])->name('dishes_menu'); */
+/* Route::get('/per_day', [MemberController::class, 'per_day'])->name('per_day'); */
+/* Route::get('/add_suggestion_dish', [MemberController::class, 'add_suggestion_dish'])->name('add_suggestion_dish'); */
+/* Route::POST('forgetpassword', [HomeController::class, 'forgetpassword'])->name('forgetpassword'); */
+/* Route::get('/Contact_Data', [HomeController::class, 'Contact_us'])->name('Contact_Data'); */
+
+
+// Non login pages
 Route::get('/', [HomeController::class, 'home_page'])->name('home_page');
-Route::POST('food_item_suggestions', [HomeController::class, 'food_item_suggestions'])->name('food_item_suggestions');
 Route::get('/how-to-use-this-site', [MemberController::class, 'howtousethissite'])->name('user.howtousethissite');
-
-Route::POST('forgetpassword', [HomeController::class, 'forgetpassword'])->name('forgetpassword');
-
-Route::post('/set-locale', [HomeController::class, 'setLocale'])->name('set-locale');
-
-Route::get('login/facebook', [SocialController::class, 'redirectToFacebook']);
-Route::get('facebook/callback', [SocialController::class, 'handleFacebookCallback']);
-
-Route::get('login/instagram', [SocialController::class, 'redirectToInstagram']);
-Route::get('login/instagram/callback', [SocialController::class, 'handleInstagramCallback']);
-
-Route::get('login/google', [SocialController::class, 'redirectToGoogle']);
-Route::get('auth/google/callback', [SocialController::class, 'handleGoogleCallback']);
-
-Route::get('/generate_random_dish', [HomeController::class, 'generate_random_dish'])->name('generate_random_dish');
-Route::get('contact', [HomeController::class, 'contact'])->name('views.contact');
-Route::get('Contact_Data', [HomeController::class, 'Contact_us'])->name('Contact_Data');
-
-Route::get('about', [HomeController::class, 'about'])->name('about');
-Route::get('privacypolicy', [HomeController::class, 'privacypolicy'])->name('views.privacypolicy');
 Route::get('faq', [HomeController::class, 'faq'])->name('views.faq');
-Route::get('terms', [HomeController::class, 'terms'])->name('views.terms');
-Route::get('forums', [HomeController::class, 'forums'])->name('views.forums');
-Route::Post('store_forum', [HomeController::class, 'store_forum'])->name('views.store_forum');
-Route::Post('store_forum_answer', [HomeController::class, 'store_forum_answer'])->name('views.store_forum_answer');
-Route::get('forumdetails/{id?}', [HomeController::class, 'forumdetails'])->name('views.forumdetails');
-
-Route::get('editreply/{id}', [HomeController::class, 'editreply'])->name('views.editreply');
-Route::delete('deletereply/{id}', [HomeController::class, 'deletereply'])->name('views.deletereply');
-Route::Patch('updatereply/{id}', [HomeController::class, 'updatereply'])->name('views.updatereply');
-
-Route::post('like/{type}/{id}', [HomeController::class, 'like'])->name('like');
-Route::post('dislike/{type}/{id}', [HomeController::class, 'dislike'])->name('dislike');
-
-Route::get('dishdetails/{id?}', [HomeController::class, 'dishdetails'])->name('dishdetails');
-Route::get('viewallcuisine', [HomeController::class, 'viewallcuisine'])->name('viewallcuisine');
-Route::get('emailsave', [HomeController::class, 'save_email'])->name('emailsave');
-Route::get('/add_suggestion_dish', [MemberController::class, 'add_suggestion_dish'])->name('add_suggestion_dish');
-Route::get('/per_day', [MemberController::class, 'per_day'])->name('per_day');
-
-Route::get('ip_address', [HomeController::class, 'ip_address'])->name('ip_address');
-Route::get('dishes_menu/{kitchen}', [HomeController::class, 'dishes_menu'])->name('dishes_menu');
+Route::get('/verify-email/{token}', [RegisterController::class, 'verifyEmail'])->name('verify.email');
+Route::post('/set-locale', [HomeController::class, 'setLocale'])->name('set-locale');
 
 Auth::routes();
 Route::group(['middleware' => ['auth', 'rolecheck', 'admin.locale']], function () {
     // Admin Users
     Route::get('/home', [UserController::class, 'admin_dashboard'])->name('home');
-    Route::get('users', [UserController::class, 'user_list'])->name('users.index');
+    Route::get('/users', [UserController::class, 'user_list'])->name('users.index');
     Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
     Route::post('/users/destroy', [UserController::class, 'destroy'])->name('users.destroy');
     Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
@@ -87,19 +81,39 @@ Route::group(['middleware' => ['auth', 'rolecheck', 'admin.locale']], function (
     });
     Route::get('/attendees/{id}', [SlotController::class, 'view_attendees'])->name('view_attendees');
     Route::delete('/slots/{id}', [SlotController::class, 'destroy'])->name('slots.destroy');
-    Route::get('slots/{slot}/leads', [SlotController::class, 'showLeads'])->name('slots.leads');
+    Route::get('/slots/{slot}/leads', [SlotController::class, 'showLeads'])->name('slots.leads');
 
-    Route::get('assign/{encryptedSlot}/leads', [SlotController::class, 'assignLead'])->name('assign_leads');
+    Route::get('/assign/{encryptedSlot}/leads', [SlotController::class, 'assignLead'])->name('assign_leads');
 
-    Route::post('slots/leads/{lead}/approve', [SlotController::class, 'approveLead'])->name('slots.leads.approve');
+    Route::post('/slots/leads/{lead}/approve', [SlotController::class, 'approveLead'])->name('slots.leads.approve');
     Route::post('/slots/{id}/approve', [SlotController::class, 'approve'])->name('slots.approve');
 
     Route::get('/markas_complete/{id}', [SlotController::class, 'markas_complete'])->name('slots.markas_complete');
 
-    Route::get('profile', [\App\Http\Controllers\ProfileController::class, 'show'])->name('profile.show');
-    Route::put('profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
     Route::post('/set-admin-locale', [UserController::class, 'setAdminLocale'])->name('set-admin-locale');
+    Route::get('/admin/users/export/csv', [UserController::class, 'exportCSV'])->name('users.export.csv');
+    Route::get('/admin/slots/export/csv', [SlotController::class, 'exportResetCSV'])->name('resetslots.export.csv');
+    Route::get('/export/newsletter-subscribers', [UserController::class, 'exportNewsletterSubscribers'])->name('newsletter.export.csv');
+
+    Route::post('/system/reset', [UserController::class, 'resetSystem'])->name('system.reset');
+    Route::get('/export/slots', [SlotController::class, 'exportSlotsCSV'])->name('export.slots.csv');
+
+    Route::get('/export/booking-history', [SlotController::class, 'exportBookingHistoryCSV'])->name('export.booking.history.csv');
+
+    Route::get('/export-sessions', [SlotController::class, 'exportSessions'])->name('sessions.export.csv');
+
+    Route::post('/users/check-before-delete', [UserController::class, 'checkBeforeDelete'])->name('users.checkBeforeDelete');
+
+    Route::post('/cancel-session/{slot}', [UserController::class, 'Cancellation_request'])->name('cancel.session');
+
+    Route::put('/admin/cancellation-requests/{id}/approve', [UserController::class, 'approveCancellationrequest'])->name('cancellation_requests.approve');
+
+    Route::get('/cancellation-requests', [UserController::class, 'showcancellatRequeest'])->name('cancellation.requests.index');
+
+    Route::post('/users/verify', [UserController::class, 'verify'])->name('users.verify');
 });
 
 // Front User Login Pages
@@ -136,41 +150,3 @@ Route::group(['middleware' => ['auth', 'noadmin']], function () {
 Route::group(['middleware' => ['auth']], function () {
     Route::post('/logout', [HomeController::class, 'logout'])->name('logout');
 });
-
-Route::get('/verify-email/{token}', [RegisterController::class, 'verifyEmail'])->name('verify.email');
-
-Route::get('/run-session-email-job', [CronsController::class, 'storeUpcomingSessionEmailsToJobs']);
-
-Route::get('/send-session-reminders', [CronsController::class, 'sendSessionReminderEmails']);
-
-Route::get('/run-every-5min', [CronsController::class, 'run_every_5min']);
-Route::get('/run-every-day', [CronsController::class, 'run_every_day']);
-
-Route::get('/admin/users/export/csv', [UserController::class, 'exportCSV'])->name('users.export.csv');
-Route::get('/admin/slots/export/csv', [SlotController::class, 'exportResetCSV'])->name('resetslots.export.csv');
-// Route::post('/admin/system/reset', [UserController::class, 'reset'])->name('system.reset');
-Route::get('/export/newsletter-subscribers', [UserController::class, 'exportNewsletterSubscribers'])->name('newsletter.export.csv');
-
-Route::post('/system/reset', [UserController::class, 'resetSystem'])->name('system.reset');
-Route::get('/export/slots', [SlotController::class, 'exportSlotsCSV'])->name('export.slots.csv');
-
-Route::get('/export/booking-history', [SlotController::class, 'exportBookingHistoryCSV'])->name('export.booking.history.csv');
-
-Route::get('/export-sessions', [SlotController::class, 'exportSessions'])->name('sessions.export.csv');
-
-Route::post('/users/check-before-delete', [UserController::class, 'checkBeforeDelete'])->name('users.checkBeforeDelete');
-
-Route::post('/cancel-session/{slot}', [UserController::class, 'Cancellation_request'])
-    ->name('cancel.session');
-
-Route::put('/admin/cancellation-requests/{id}/approve', [UserController::class, 'approveCancellationrequest'])
-    ->name('cancellation_requests.approve');
-
-Route::get('/cancellation-requests', [UserController::class, 'showcancellatRequeest'])
-    ->name('cancellation.requests.index');
-
-Route::get('/send-cancellation-mails', [CronjobController::class, 'sendCancellationMails'])
-    ->name('cancellation-mails.send');
-
-    Route::post('/users/verify', [UserController::class, 'verify'])->name('users.verify');
-
