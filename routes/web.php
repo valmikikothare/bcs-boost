@@ -107,7 +107,6 @@ Route::group(['middleware' => ['auth', 'rolecheck', 'admin.locale']], function (
 
     Route::post('/users/check-before-delete', [UserController::class, 'checkBeforeDelete'])->name('users.checkBeforeDelete');
 
-    Route::post('/cancel-session/{slot}', [UserController::class, 'Cancellation_request'])->name('cancel.session');
 
     Route::put('/admin/cancellation-requests/{id}/approve', [UserController::class, 'approveCancellationrequest'])->name('cancellation_requests.approve');
 
@@ -137,6 +136,8 @@ Route::group(['middleware' => ['auth', 'noadmin']], function () {
     Route::post('/cancelBookingById/{id}/{slot_id}', [MemberController::class, 'cancelBookingById'])->name('user.cancelBookingById');
 
     Route::get('/user/my-sessions', [MemberController::class, 'mySessions'])->name('user.my_sessions');
+
+    Route::post('/cancel-session/{slot}', [UserController::class, 'Cancellation_request'])->name('cancel.session');
 
     Route::post('/bookasession', [MemberController::class, 'bookasession'])->name('bookasession');
 
