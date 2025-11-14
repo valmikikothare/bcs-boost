@@ -4,14 +4,19 @@
 
 set -e
 
+if [[ $EUID != 0 ]]; then
+    echo "Must be run as root/sudo"
+    exit 1
+fi
+
 php artisan optimize:clear
 php artisan schedule:clear-cache
-sudo rm -rf storage/framework/sessions/*
+rm -rf storage/framework/sessions/*
 
 php artisan optimize
 php artisan view:cache
 
-sudo chown -R $(id -un):www-data storage bootstrap/cache
+chown -R ubuntu:www-data storage bootstrap/cache
 
-sudo systemctl restart apache2
+systemctl restart apache2
 
