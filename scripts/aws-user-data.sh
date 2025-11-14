@@ -190,7 +190,8 @@ systemctl restart apache2
 
 ### === Cron job scheduling
 log "Creating cron job to schedule"
-echo "* * * * * ${USER_NAME} cd ${PROJECT_DIR} && php artisan schedule:run >> /dev/null 2>&1" > /etc/cron.d/boost
+echo "* * * * * www-data cd ${PROJECT_DIR} && php artisan schedule:run >> /dev/null 2>&1" > /etc/cron.d/boost
+systemctl restart cron
 
 log "All done! Site should be available at: https://${DOMAIN}"
 
