@@ -6,5 +6,7 @@ set -e
 
 php artisan optimize:clear
 php artisan optimize
+php artisan view:cache
+
 sudo systemctl restart apache2
 

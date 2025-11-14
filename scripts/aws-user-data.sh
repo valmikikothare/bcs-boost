@@ -142,7 +142,7 @@ php artisan view:cache
 ### === Laravel permissions ===
 log "Setting storage, asset, and cache permissions"
 sudo chown -R "${USER_NAME}":www-data storage bootstrap/cache public/admin/assets/images
-sudo chmod -R 775 storage bootstrap/cache
+sudo chmod -R 775 storage bootstrap/cache public/admin/assets/images
 EOF
 
 ### === Apache vhost for Laravel (DocumentRoot -> public) ===
@@ -190,7 +190,7 @@ systemctl restart apache2
 
 ### === Cron job scheduling
 log "Creating cron job to schedule"
-echo "* * * * * www-data cd /var/www/html && php artisan schedule:run >> /dev/null 2>&1" > /etc/cron.d/boost
+echo "* * * * * ${USER_NAME} cd ${PROJECT_DIR} && php artisan schedule:run >> /dev/null 2>&1" > /etc/cron.d/boost
 
 log "All done! Site should be available at: https://${DOMAIN}"
 
