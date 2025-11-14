@@ -132,18 +132,21 @@ rm -rf node_modules
 ### === Laravel dependencies ===
 log "Installing Laravel dependencies with Composer"
 composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+EOF
 
 ### === Optimize Laravel cache ===
 log "Optimizing laravel caches"
 php artisan optimize:clear
+php artisan schedule:clear-cache
+rm -rf storage/framework/sessions/*
+
 php artisan optimize
 php artisan view:cache
 
 ### === Laravel permissions ===
 log "Setting storage, asset, and cache permissions"
-sudo chown -R "${USER_NAME}":www-data storage bootstrap/cache public/admin/assets/images
-sudo chmod -R 775 storage bootstrap/cache public/admin/assets/images
-EOF
+chown -R "${USER_NAME}":www-data storage bootstrap/cache public/admin/assets/images
+chmod -R 775 storage bootstrap/cache public/admin/assets/images
 
 ### === Apache vhost for Laravel (DocumentRoot -> public) ===
 log "Creating Apache vhost for ${DOMAIN}"

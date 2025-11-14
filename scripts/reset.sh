@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Intended to be ran as non-root user with sudo privileges
+# Intended to be ran as root user
 
 set -e
 
@@ -17,6 +17,7 @@ php artisan optimize
 php artisan view:cache
 
 chown -R ubuntu:www-data storage bootstrap/cache
+chmod -R 775 storage bootstrap/cache
 
 systemctl restart apache2
 
