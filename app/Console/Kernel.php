@@ -2,9 +2,11 @@
 
 namespace App\Console;
 
+use App\Console\Commands\StoreReminderEmails;
+use App\Console\Commands\SendReminderEmails;
+use App\Console\Commands\SendCancellationEmails;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-use App\Http\Controllers\CronsController;
 
 class Kernel extends ConsoleKernel
 {
@@ -13,13 +15,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->call(function () {
-            app(CronsController::class)->run_every_day();
-        })->dailyAt('01:00');
-
-        $schedule->call(function () {
-            app(CronsController::class)->run_every_5min();
-        })->everyFiveMinutes();
+        $schedule->command(StoreReminderEmails::class)->dailyAt('09:00');
+        $schedule->command(SendReminderEmails::class)->withoutOverlapping()->everyFiveMinutes();
+        $schedule->command(SendCancellationEmails::class)->withoutOverlapping()->everyFiveMinutes();
     }
 
     /**

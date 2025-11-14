@@ -48,39 +48,38 @@ FROM base AS build
 ARG PROJECT_DIR
 ARG USER_NAME
 
-WORKDIR ${PROJECT_DIR}
-
 # Copy source code
 COPY . ${PROJECT_DIR} 
-RUN cp .env.docker .env && chown -R ${USER_NAME}:${USER_NAME} ${PROJECT_DIR}
+
+WORKDIR ${PROJECT_DIR}
+
+# Configure file permissions
+RUN <<EOT
+set -ex
+chown -R ${USER_NAME}:${USER_NAME} .
+chown -R "${USER_NAME}":www-data storage bootstrap/cache
+chmod -R 775 storage bootstrap/cache
+EOT
 
 USER ${USER_NAME}
 
 # Install JS dependencies and build frontend as the non-root user
-RUN --mount=type=cache,target=${PROJECT_DIR}/node_modules,uid=1000,gid=1000 <<EOT
-set -ex
-npm install --no-audit --no-fund
-npm run build 
-EOT
+RUN --mount=type=cache,target=${PROJECT_DIR}/node_modules,uid=1000,gid=1000 \
+    npm install --no-audit --no-fund && npm run build 
 
-# Install PHP dependencies with Composer
+# Install PHP dependencies with Composer and clear laravel cache
 RUN --mount=type=cache,target=/tmp/cache \
-    composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+    composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction \
+    && php artisan optimize:clear
 
 USER root
-
-# Set permissions for Laravel storage and cache directories
-RUN <<EOT
-set -ex
-chown -R "${USER_NAME}":www-data storage bootstrap/cache
-chmod -R 775 storage bootstrap/cache
-EOT
 
 # Create Apache virtual host (DocumentRoot -> public)
 
 ARG DOMAIN
 
 RUN <<EOT
+set -ex
 a2enmod rewrite headers ssl  
 cat > /etc/apache2/sites-available/${DOMAIN}.conf <<EOF
 <VirtualHost *:80>
@@ -111,8 +110,17 @@ EOT
 # Expose HTTP and HTTPS
 EXPOSE 80 443
 
-# Start Apache in the foreground
-CMD ["apache2ctl", "-D", "FOREGROUND"]
+COPY --chmod=770 <<EOF /entrypoint.sh
+#!/bin/bash
+set -e
+cd ${PROJECT_DIR}
+php artisan optimize:clear
+php artisan optimize
+php artisan view:cache
+apache2ctl -D  FOREGROUND
+EOF
+
+ENTRYPOINT ["/entrypoint.sh"]
 
 
 FROM base AS dev
@@ -131,4 +139,5 @@ ARG PROJECT_DIR
 
 WORKDIR ${PROJECT_DIR}
 
+ENTRYPOINT []
 CMD ["sleep", "infinity"]
