@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Mail\AdminCancellationMail;
@@ -229,7 +230,7 @@ class UserController extends Controller
         $user->name     = $validatedData['name'];
         $user->email    = $validatedData['email'];
         $user->password = Hash::make($validatedData['password']);
-         $user->role     = 2; // ✅ Always set role = 2
+        $user->role     = 2; // Always set role = 2
 
         if ($request->hasFile('image')) {
             $imageExtension = $request->file('image')->getClientOriginalExtension();
@@ -302,8 +303,8 @@ class UserController extends Controller
         $user->name            = $validatedData['name'];
         $user->email           = $validatedData['email'];
         $user->laboratory_name = $validatedData['laboratory_name'] ?? null;
-          // ✅ Ensure role always stays valid
-    $user->role = $user->role ?? 2; // If somehow null, set to 2
+        // Ensure role always stays valid
+        $user->role = $user->role ?? 2; // If somehow null, set to 2
 
         if (! empty($validatedData['password'])) {
             $user->password = Hash::make($validatedData['password']);
@@ -332,7 +333,7 @@ class UserController extends Controller
     //     $user->delete();
     //     return redirect()->route('admin.users.index')->with('success', 'User has been deleted successfully'); // Updated success message
     // }
-// Add this method in your UserController
+    // Add this method in your UserController
     public function checkBeforeDelete(Request $request)
     {
         $user = User::with(['sessionLeads', 'bookingHistory'])->find($request->id);
@@ -349,12 +350,12 @@ class UserController extends Controller
             'hasSessionLeads'   => $hasSessionLeads,
             'hasBookingHistory' => $hasBookingHistory,
             'message'           => ($hasSessionLeads || $hasBookingHistory)
-            ? 'This user has ' .
-            ($hasSessionLeads ? 'session leads' : '') .
-            ($hasSessionLeads && $hasBookingHistory ? ' and ' : '') .
-            ($hasBookingHistory ? 'booking history' : '') .
-            '. Do you want to delete them along with the user?'
-            : 'Are you sure you want to delete this user?',
+                ? 'This user has ' .
+                ($hasSessionLeads ? 'session leads' : '') .
+                ($hasSessionLeads && $hasBookingHistory ? ' and ' : '') .
+                ($hasBookingHistory ? 'booking history' : '') .
+                '. Do you want to delete them along with the user?'
+                : 'Are you sure you want to delete this user?',
         ]);
     }
 
