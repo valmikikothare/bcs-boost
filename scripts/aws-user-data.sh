@@ -137,11 +137,12 @@ composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
 log "Optimizing laravel caches"
 php artisan optimize:clear
 php artisan optimize
+php artisan view:cache
 
 ### === Laravel permissions ===
-log "Setting Laravel storage and cache permissions"
-sudo chown -R "${USER_NAME}":www-data storage bootstrap/cache
-sudo chmod -R 775 storage bootstrap/cache
+log "Setting storage, asset, and cache permissions"
+sudo chown -R "${USER_NAME}":www-data storage bootstrap/cache public/admin/assets/images
+sudo chmod -R 775 storage bootstrap/cache public/admin/assets/images
 EOF
 
 ### === Apache vhost for Laravel (DocumentRoot -> public) ===
@@ -183,9 +184,13 @@ echo "y" | ufw enable
 log "Installing Certbot and obtaining SSL certificate for ${DOMAIN}"
 certbot --apache -d "${DOMAIN}" --redirect --agree-tos -m "admin@${DOMAIN}" -n || true
 
-### === Final restart ===
+### === Final Apache restart ===
 log "Restarting Apache"
 systemctl restart apache2
+
+### === Cron job scheduling
+log "Creating cron job to schedule"
+echo "* * * * * ${USER_NAME} cd ${PROJECT_DIR} && php artisan schedule:run >> /dev/null 2>&1" > /etc/cron.d/boost
 
 log "All done! Site should be available at: https://${DOMAIN}"
 

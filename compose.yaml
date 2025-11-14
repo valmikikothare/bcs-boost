@@ -36,57 +36,75 @@ services:
       - net
     ports:
       - 8085:80
-    depends_on:
-      - db
       # db:
       #   condition: service_healthy
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - logs:/var/www/html/storage/logs
     environment:
+      - APP_ENV=${APP_ENV}
       - APP_KEY=${APP_KEY}
       - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - db
     init: true
     restart: unless-stopped
-    post_start:
-      - command: php artisan optimize
-        user: ubuntu
-    pre_stop:
-      - command: php artisan optimize:clear
-        user: ubuntu
+    # post_start:
+    #   - command: php artisan optimize:clear
+    #     user: ubuntu
+    # pre_stop:
+    #   - command: php artisan optimize:clear
+    #     user: ubuntu
     develop:
       watch:
-        - path: ./composer.json
+        - path: .
+          include:
+            - composer.json
+            - package.json
+            - public
+            - resources
           action: rebuild
-        - path: ./package.json
-          action: rebuild
-        - path: ./.env.docker
-          action: rebuild
-        - path: ./app
-          action: rebuild
-        - path: ./bootstrap
-          action: rebuild
-        - path: ./config
-          action: rebuild
-        - path: ./images
-          action: rebuild
-        - path: ./images
-          action: rebuild
+        - path: .
+          target: /var/www/html
+          include:
+            - app
+            - bootstrap
+            - config
+            - routes
+            - .env.local
+            # - views
+          action: sync+restart
+          initial_sync: true
 
   dev:
     container_name: boost-dev
     profiles: [ dev ]
     image: boost/dev
-    ports:
-      - 8086:8000
     build:
       context: .
       target: dev
+    pull_policy: build
     networks:
       - net
+    ports:
+      - 8086:8000
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - type: bind
         source: .
         target: /var/www/html
+      - logs:/logs_ws
+    environment:
+      - APP_ENV=${APP_ENV}
+      - APP_KEY=${APP_KEY}
+      - DB_PASSWORD=${DB_PASSWORD}
     depends_on:
       - db
+    init: true
+    # post_start:
+    #   - command: chown -R ubuntu:www-data storage bootstrap/cache
+    #     working_dir: /var/www/html
+    #     user: root
 
 networks:
   net:
@@ -94,3 +112,4 @@ networks:
 
 volumes:
   db-data:
+  logs:

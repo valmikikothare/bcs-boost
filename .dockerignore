@@ -25,7 +25,9 @@ yarn-error.log
 /.idea
 /.nova
 /.vscode
+/.devcontainer
 /.zed
+*.zip
 
 # Local development
 *credentials.csv
@@ -33,6 +35,7 @@ yarn-error.log
 
 # Docker-specific
 /storage/logs/*
+/storage/framework/sessions/*
 /bootstrap/cache/*
 Dockerfile
 .dockerignore
