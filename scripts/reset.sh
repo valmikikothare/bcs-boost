@@ -5,7 +5,7 @@
 set -e
 
 php artisan optimize:clear
-php artisan schedule:cache-clear
+php artisan schedule:clear-cache
 sudo rm -rf storage/framework/sessions/*
 
 php artisan optimize
